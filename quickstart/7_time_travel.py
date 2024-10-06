@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Literal
 from langchain_openai import ChatOpenAI
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_core.messages import AIMessage, ToolMessage
@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-# Define the State type with a new 'ask_human' flag
+# Define the State type with 'ask_human' flag
 class State(TypedDict):
 	messages: Annotated[list, add_messages]
 	ask_human: bool
@@ -127,13 +127,29 @@ def process_input(graph, user_input: str, config: dict):
 	return False
 
 
-# Main function to run the chatbot
+# Function to display conversation history
+def display_history(graph, config):
+	for i, state in enumerate(graph.get_state_history(config)):
+		print(f"State {i}:")
+		print(f"Num Messages: {len(state.values['messages'])}, Next: {state.next}")
+		print("-" * 80)
+
+
+# Function to replay conversation from a specific state
+def replay_from_state(graph, state, config):
+	print(f"Replaying conversation from state with {len(state.values['messages'])} messages:")
+	for event in graph.stream(None, state.config, stream_mode="values"):
+		if "messages" in event:
+			event["messages"][-1].pretty_print()
+
+
+# Main function to run the chatbot with time travel capability
 def main():
 	graph = build_graph()
 	display_graph(graph)
 
-	print("\nCustomized State Chatbot with Human-in-the-Loop Capability")
-	print("Type 'quit' to exit the conversation.")
+	print("\nCustomized State Chatbot with Human-in-the-Loop and Time Travel Capability")
+	print("Type 'quit' to exit, 'history' to view conversation history, or 'travel X' to jump to a previous state.")
 
 	config = {"configurable": {"thread_id": "1"}}
 	while True:
@@ -141,6 +157,20 @@ def main():
 		if user_input.lower() == 'quit':
 			print("Exiting the conversation. Goodbye!")
 			break
+		elif user_input.lower() == 'history':
+			display_history(graph, config)
+			continue
+		elif user_input.lower().startswith('travel '):
+			try:
+				state_num = int(user_input.split()[1])
+				states = list(graph.get_state_history(config))
+				if 0 <= state_num < len(states):
+					replay_from_state(graph, states[state_num], config)
+				else:
+					print("Invalid state number. Please try again.")
+			except (ValueError, IndexError):
+				print("Invalid input for time travel. Please use 'travel X' where X is a valid state number.")
+			continue
 
 		human_requested = process_input(graph, user_input, config)
 

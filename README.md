@@ -16,6 +16,7 @@ So far, we have explored the basics of LangGraph through the Quick Start tutoria
 4. Human-in-the-loop functionality
 5. Manually updating a State
 6. Customizing a State
+7. Time travel
 
 ## Planned Explorations
 
