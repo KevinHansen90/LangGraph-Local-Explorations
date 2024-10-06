@@ -14,6 +14,8 @@ So far, we have explored the basics of LangGraph through the Quick Start tutoria
 2. Integration of tools (like web search) into the chatbot
 3. Implementation of memory and state management
 4. Human-in-the-loop functionality
+5. Manually updating a State
+6. Customizing a State
 
 ## Planned Explorations
 
